@@ -11,6 +11,10 @@
 #include "platform.hpp"
 #include "multiview.hpp"
 
+#if !defined(_WIN32) && !defined(__APPLE__)
+#include <obs-nix-platform.h>
+#endif
+
 static QList<OBSProjector *> multiviewProjectors;
 
 static bool updatingMultiview = false, mouseSwitching, transitionOnDoubleClick;
@@ -35,8 +39,11 @@ OBSProjector::OBSProjector(QWidget *widget, obs_source_t *source_, int monitor, 
 	windowHandle()->setProperty("isOBSProjectorWindow", true);
 
 #if defined(__linux__) || defined(__FreeBSD__) || defined(__DragonFly__)
-	// Prevents resizing of projector windows
-	setAttribute(Qt::WA_PaintOnScreen, false);
+    if (obs_get_nix_platform() == OBS_NIX_PLATFORM_X11_EGL)
+    {
+        // Prevents resizing of projector windows on X11
+        setAttribute(Qt::WA_PaintOnScreen, false);
+    }
 #endif
 
 	type = type_;
